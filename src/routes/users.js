@@ -88,7 +88,7 @@ router.post('/signUp', (req, res) => {
 
     if(results.length > 0) {
 
-      res.status(409).end('El email ya esta registrado en la base de datos');
+      res.status(409).json({'message': 'El email ya esta registrado en la base de datos'});
 
     } else {
 
@@ -98,7 +98,7 @@ router.post('/signUp', (req, res) => {
 
         if(results.length > 0) {
 
-          res.status(409).end('La cedula ya esta registrada en la base de datos');
+          res.status(409).json({'message': 'La cedula ya esta registrada en la base de datos'});
 
         } else {
 
@@ -108,7 +108,7 @@ router.post('/signUp', (req, res) => {
 
             if(results.length > 0) {
 
-              res.status(409).end('El numero de telefono ya esta registrado');
+              res.status(409).json({'message': 'El numero de telefono ya esta registrado'});
             
             } else {
 
