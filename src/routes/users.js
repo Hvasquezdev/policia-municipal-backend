@@ -1,15 +1,11 @@
 const express = require('express');
 const router = express.Router();
 const jwtSimple = require('jwt-simple');
-
 const mysqlConnection = require('../database');
 const service = require('../../services/index');
 
 // middleware
 router.use(express.json());
-
-// secret jwt key
-const jwtSecretKey = 'policia_angostura_api_secret_key_venezuela_2018';
 
 // Get all users
 router.get('/', (req, res) => {
@@ -76,8 +72,11 @@ router.get('/:id', (req, res) => {
 // Register new user
 router.post('/signUp', (req, res) => {
 
-  const { id_user, nombre, apellido, rol, cedula, email, licencia, placa, telefono, pass } = req.body;
-  const query = 'CALL userAddOrEdit(?, ?, ?, ?, ?, ?, ?, ?, ?, ?);';
+  const { id_user, nombre, apellido, rol, estado, cedula, email, licencia, placa, telefono, pass } = req.body;
+
+  const queryUser = 'INSERT INTO users (ID, nombre, apellido, cedula, email, pass) VALUES (NULL, ?, ?, ?, ?, ?);';
+  const queryRol = 'INSERT INTO rol (ID, nombre, estado, users_ID) VALUES (NULL, ?, ?, (SELECT ID FROM users WHERE email = ?));';
+  const queryCredentials = 'INSERT INTO credentials (ID, telefono, licencia, placa, users_ID) VALUES (NULL, ?, ?, ?, (SELECT ID FROM users WHERE email = ?));';
   const authEmailQuery = 'SELECT ID FROM users WHERE email = ?';
   const authCedulaQuery = 'SELECT ID FROM users WHERE cedula = ?';
   const authPhoneQuery = 'SELECT ID FROM credentials WHERE telefono = ?';
@@ -112,11 +111,22 @@ router.post('/signUp', (req, res) => {
             
             } else {
 
-              mysqlConnection.query(query, [id_user, nombre, apellido, rol, cedula, email, licencia, placa, telefono, pass], (err, results, fields) => {
+              mysqlConnection.query(queryUser, [nombre, apellido, cedula, email, pass], (err, results) => {
 
                 if (err) return console.error(err);
 
-                res.status(200).json({'message': 'Usuario Registrado correctamente'});
+                mysqlConnection.query(queryRol, [rol, estado, email], (err, results) => {
+
+                  if (err) return console.log(err);
+
+                  mysqlConnection.query(queryCredentials, [telefono, licencia, placa, email], (err, results) => {
+
+                    if (err) return console.log(err);
+                    res.status(200).json({'message': 'Usuario Registrado correctamente'});
+
+                  });
+
+                });
                 
               });
 
@@ -179,15 +189,58 @@ router.post('/login', (req, res) => {
 // Update user
 router.put('/:id_user', (req, res) => {
 
-  const { id_user } = req.params;
-  const { nombre, apellido, email, licencia, placa, pass, cedula } = req.body;
-  const query = 'CALL userAddOrEdit(?, ?, ?, ?, ?, ?, ?, ?);';
+  const query = 'CALL userAddOrEdit(?, ?, ?, ?, ?, ?, ?, ?, ?, ?);';
+  const authEmailQuery = 'SELECT ID FROM users WHERE email = ? AND ID <> ?';
+  const authCedulaQuery = 'SELECT ID FROM users WHERE cedula = ? AND ID <> ?';
+  const authPhoneQuery = 'SELECT ID FROM credentials WHERE telefono = ? AND ID <> ?';
 
-  mysqlConnection.query(query, [id_user, nombre, apellido, email, licencia, placa, pass, cedula], (err, results, fields) => {
+  mysqlConnection.query(authEmailQuery, [req.body.data.email, req.body.data.ID], (err, results) => {
 
-    if (err) return console.error(err);
+    if(err) return console.error(err);
 
-    res.status(200).json({'message': 'Usuario Actualizado'});
+    if(results.length > 0) {
+
+      res.status(409).json({'message': 'El email ya esta registrado en la base de datos'});
+
+    } else {
+
+      mysqlConnection.query(authCedulaQuery, [req.body.data.cedula, req.body.data.ID], (err, results) => {
+
+        if(err) return console.error(err);
+
+        if(results.length > 0) {
+
+          res.status(409).json({'message': 'La cedula ya esta registrada en la base de datos'});
+
+        } else {
+
+          mysqlConnection.query(authPhoneQuery, [req.body.credentials.telefono, req.body.credentials.ID], (err, results) => {
+
+            if(err) return console.log(err);
+
+            if(results.length > 0) {
+
+              res.status(409).json({'message': 'El numero de telefono ya esta registrado'});
+            
+            } else {
+
+              mysqlConnection.query(query, [req.body.data.ID, req.body.data.nombre, req.body.data.apellido, rol, cedula, email, licencia, placa, telefono, pass], (err, results, fields) => {
+
+                if (err) return console.error(err);
+
+                res.status(200).json({'message': 'Usuario Registrado correctamente'});
+                
+              });
+
+            }
+
+          });
+
+        }
+
+      });
+
+    }
 
   });
 
