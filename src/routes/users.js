@@ -187,7 +187,7 @@ router.post('/login', (req, res) => {
 });
 
 // Update user
-router.put('/:id_user', (req, res) => {
+router.put('/:id_user', (req, res) => { // TODO delete stored procedure and write queries in code
 
   const query = 'CALL userAddOrEdit(?, ?, ?, ?, ?, ?, ?, ?, ?, ?);';
   const authEmailQuery = 'SELECT ID FROM users WHERE email = ? AND ID <> ?';
@@ -247,7 +247,7 @@ router.put('/:id_user', (req, res) => {
 });
 
 // Delete user
-router.delete('/:id_user', (req, res) => {
+router.delete('/:id_user', (req, res) => { // TODO make it works
 
   const { id_user } = req.params;
   
