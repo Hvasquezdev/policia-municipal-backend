@@ -189,7 +189,9 @@ router.post('/login', (req, res) => {
 // Update user
 router.put('/:id_user', (req, res) => { // TODO delete stored procedure and write queries in code
 
-  const query = 'CALL userAddOrEdit(?, ?, ?, ?, ?, ?, ?, ?, ?, ?);';
+  const queryUpdate = 'UPDATE users SET nombre = ?, apellido = ?, email = ?, pass = ?, cedula = ? WHERE ID = ?;';
+  const queryUpdateRol = 'UPDATE rol SET nombre = ?, estado = ? WHERE users_ID = ?;';
+  const queryUpdateCredentials = 'UPDATE credentials SET telefono = ?, licencia = ?, placa = ? WHERE users_ID = ?;';
   const authEmailQuery = 'SELECT ID FROM users WHERE email = ? AND ID <> ?';
   const authCedulaQuery = 'SELECT ID FROM users WHERE cedula = ? AND ID <> ?';
   const authPhoneQuery = 'SELECT ID FROM credentials WHERE telefono = ? AND ID <> ?';
@@ -224,11 +226,22 @@ router.put('/:id_user', (req, res) => { // TODO delete stored procedure and writ
             
             } else {
 
-              mysqlConnection.query(query, [req.body.data.ID, req.body.data.nombre, req.body.data.apellido, rol, cedula, email, licencia, placa, telefono, pass], (err, results, fields) => {
+              mysqlConnection.query(queryUpdate, [req.body.data.nombre, req.body.data.apellido, req.body.data.email, req.body.data.pass, req.body.data.cedula, req.body.data.ID], (err) => {
 
                 if (err) return console.error(err);
+                
+                mysqlConnection.query(queryUpdateRol, [req.body.rol.nombre, req.body.rol.estado, req.body.data.ID], (err, results) => {
 
-                res.status(200).json({'message': 'Usuario Registrado correctamente'});
+                  if (err) return console.error(err);
+
+                  mysqlConnection.query(queryUpdateCredentials, [req.body.credentials.telefono, req.body.credentials.licencia, req.body.credentials.placa, req.body.data.ID], (err) => {
+
+                    if (err) return console.error(err);
+                    res.status(200).json({'message': 'Usuario actualizado correctamente'});
+
+                  });
+
+                });
                 
               });
 
