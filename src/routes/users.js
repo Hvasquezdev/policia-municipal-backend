@@ -20,8 +20,9 @@ router.get('/', (req, res) => {
 
 });
 
+
 // Get specific user
-router.get('/:id', (req, res) => {
+router.get('/user/:id', (req, res) => {
 
   const { id } = req.params;
 
@@ -269,6 +270,36 @@ router.delete('/:id_user', (req, res) => { // TODO make it works
     if (err) return console.error(err);
 
     res.status(200).json({'message': 'Usuario eliminado correctamente'});
+
+  });
+
+});
+
+// MULTAS 
+
+// Get all multas
+router.get('/multas', (req, res) => {
+
+  mysqlConnection.query('SELECT * FROM multa', (err, results, fields) => {
+
+    if (err) return console.error(err);
+
+    res.json(results);
+
+  });
+
+});
+
+// Get specific multa
+router.get('/multas/:id', (req, res) => {
+
+  const { id } = req.params;
+
+  mysqlConnection.query('SELECT * FROM multa WHERE ID = ?' [id], (err, results, fields) => {
+
+    if (err) return console.error(err);
+
+    res.json(results);
 
   });
 
