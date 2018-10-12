@@ -280,29 +280,43 @@ router.delete('/:id_user', (req, res) => { // TODO make it works
 // Get all multas
 router.get('/multas', (req, res) => {
 
-  mysqlConnection.query('SELECT * FROM multa', (err, results, fields) => {
-
+  mysqlConnection.query('SELECT * FROM multa', (err, results) => {
     if (err) return console.error(err);
-
     res.json(results);
-
   });
-
 });
 
 // Get specific multa
 router.get('/multas/:id', (req, res) => {
-
-  const { id } = req.params;
-
-  mysqlConnection.query('SELECT * FROM multa WHERE ID = ?' [id], (err, results, fields) => {
-
+  const { id } = req.params; // Parametro recibido por la ruta
+  mysqlConnection.query('SELECT * FROM multa WHERE ID = ?' [id], (err, results) => {
     if (err) return console.error(err);
-
     res.json(results);
-
   });
 
+});
+
+router.get('/facturas', (req, res) => {
+  let factura, user, multa, allData;
+  mysqlConnection.query('SELECT * FROM factura', (err, results) => {
+    if (err) return console.error(err);
+    factura = results;
+
+    for(let i = 0; i < factura.length; i++) {
+      mysqlConnection.query(`SELECT * FROM users WHERE ID = ${factura[i].users_ID}`, (err, results) => {
+        if (err) return console.error(err);
+        user = results;
+        
+        mysqlConnection.query(`SELECT * FROM multa WHERE ID = ${factura[i].multa_ID}`, (err, results) => {
+          if (err) return console.error(err);
+          multa = results;
+          allData = { factura, user, multa };
+
+          res.json(allData);
+        });
+      });
+    }
+  });
 });
 
 module.exports = router;
