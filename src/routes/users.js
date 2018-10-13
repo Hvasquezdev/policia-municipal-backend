@@ -319,4 +319,27 @@ router.get('/facturas', (req, res) => {
   });
 });
 
+router.get('/facturas/:id', (req, res) => {
+  const { id } = req.params; // Parametro recibido por la ruta
+  let factura, multa, allData;
+  mysqlConnection.query('SELECT * FROM factura WHERE users_ID = ?', [id], (err, results) => {
+    if (err) return console.error(err);
+    factura = results;
+
+    for(let i = 0; i < factura.length; i++) {        
+      mysqlConnection.query(`SELECT * FROM multa WHERE ID = ${factura[i].multa_ID}`, (err, results) => {
+        if (err) return console.error(err);
+        multa = results;
+        allData = { factura, multa };
+
+        res.json(allData);
+      });
+    }
+  });
+});
+
+router.post('/factura', (req, res) => {
+  console.log(req.body)
+});
+
 module.exports = router;
