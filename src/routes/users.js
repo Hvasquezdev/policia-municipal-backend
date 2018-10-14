@@ -296,26 +296,21 @@ router.get('/multas/:id', (req, res) => {
 
 });
 
+// Facturas
 router.get('/facturas', (req, res) => {
-  let factura, user, multa, allData;
+  let factura, multa, allData;
+  let user = {};
   mysqlConnection.query('SELECT * FROM factura', (err, results) => {
     if (err) return console.error(err);
     factura = results;
 
-    for(let i = 0; i < factura.length; i++) {
-      mysqlConnection.query(`SELECT * FROM users WHERE ID = ${factura[i].users_ID}`, (err, results) => {
-        if (err) return console.error(err);
-        user = results;
-        
-        mysqlConnection.query(`SELECT * FROM multa WHERE ID = ${factura[i].multa_ID}`, (err, results) => {
-          if (err) return console.error(err);
-          multa = results;
-          allData = { factura, user, multa };
+    factura.forEach((element, index) => {
+      user[index] = element;
+      // TODO get users and multas and store in a json
+    });
 
-          res.json(allData);
-        });
-      });
-    }
+    console.log(user)
+    res.json(allData)
   });
 });
 
@@ -331,15 +326,28 @@ router.get('/facturas/:id', (req, res) => {
         if (err) return console.error(err);
         multa = results;
         allData = { factura, multa };
-
-        res.json(allData);
       });
     }
+
+
+    res.json(allData)
   });
 });
 
 router.post('/factura', (req, res) => {
-  console.log(req.body)
+  const { tipoMulta, fechaInicio, fechaLimite, mensaje, estado } = req.body.factura;
+  const { user } = req.body;
+  const fechaEmision = fechaInicio.dia + '-' + fechaInicio.mes + '-' + fechaInicio.año;
+  const fechaLimiteMulta = fechaLimite.dia + '-' + fechaLimite.mes + '-' + fechaLimite.año;
+
+  const query = 'INSERT INTO factura (ID, Fecha_Emision, Fecha_Limite, mensaje, Estado_Factura, multa_ID, users_ID) VALUES (NULL, ?, ?, ?, ?, ?, ?);';
+
+  mysqlConnection.query(query, [fechaEmision, fechaLimiteMulta, mensaje, estado, tipoMulta, user], (err, results) => {
+
+    if(err) return console.error(err);
+    res.json({message: 'Usuario multado correctamente'});
+
+  });
 });
 
 module.exports = router;
