@@ -298,39 +298,49 @@ router.get('/multas/:id', (req, res) => {
 
 // Facturas
 router.get('/facturas', (req, res) => {
-  let factura, multa, allData;
+  let factura = {};
   let user = {};
+  let multa = {};
   mysqlConnection.query('SELECT * FROM factura', (err, results) => {
     if (err) return console.error(err);
     factura = results;
 
-    factura.forEach((element, index) => {
-      user[index] = element;
-      // TODO get users and multas and store in a json
-    });
+    factura.forEach((element, index, item) => {
+      mysqlConnection.query('SELECT * FROM users WHERE ID = ?', [factura[index].users_ID], (err, results) => {
+        if (err) return console.error(err);
+        user[index] = results[0];
 
-    console.log(user)
-    res.json(allData)
+          mysqlConnection.query('SELECT * FROM multa WHERE ID = ?', [factura[index].multa_ID], (err, results) => {
+            if (err) return console.error(err);
+            multa[index] = results[0];
+            if(index === item.length-1) {
+              const allData = {factura, user, multa};
+              res.json(allData);
+            }
+          });
+      });
+    });
   });
 });
 
 router.get('/facturas/:id', (req, res) => {
   const { id } = req.params; // Parametro recibido por la ruta
-  let factura, multa, allData;
+  let factura = {};
+  let multa = {};
   mysqlConnection.query('SELECT * FROM factura WHERE users_ID = ?', [id], (err, results) => {
     if (err) return console.error(err);
     factura = results;
 
-    for(let i = 0; i < factura.length; i++) {        
-      mysqlConnection.query(`SELECT * FROM multa WHERE ID = ${factura[i].multa_ID}`, (err, results) => {
+    factura.forEach((element, index, item) => {
+      mysqlConnection.query('SELECT * FROM multa WHERE ID = ?', [factura[index].multa_ID], (err, results) => {
         if (err) return console.error(err);
-        multa = results;
-        allData = { factura, multa };
+        multa[index] = results[0];
+        if(index === item.length-1) {
+          const allData = {factura, multa};
+          res.json(allData);
+        }
       });
-    }
-
-
-    res.json(allData)
+    });
   });
 });
 
