@@ -8,7 +8,7 @@ app.set('port', 3001);
 
 // Middlewares
 app.use(express.json());
-app.use(expressJwt({secret: service.SECRET_TOKEN}).unless({path: ['/login', '/signUp']}));
+// app.use(expressJwt({secret: service.SECRET_TOKEN}).unless({path: ['/login', '/signUp']}));
 
 // Set Headers
 app.use(function (req, res, next) {

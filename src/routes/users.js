@@ -360,4 +360,13 @@ router.post('/factura', (req, res) => {
   });
 });
 
+// Comprobante de pago
+router.get('/pago/:id', (req, res) => {
+  const { id } = req.params; // Parametro recibido por la ruta
+  mysqlConnection.query('SELECT * FROM comprobante WHERE users_ID = ?', [id], (err, results) => {
+    if (err) return console.error(err);
+    res.json(results);
+  });
+});
+
 module.exports = router;
