@@ -188,7 +188,7 @@ router.post('/login', (req, res) => {
 });
 
 // Update user
-router.put('/:id_user', (req, res) => { // TODO delete stored procedure and write queries in code
+router.put('/:id_user', (req, res) => {
 
   const queryUpdate = 'UPDATE users SET nombre = ?, apellido = ?, email = ?, pass = ?, cedula = ? WHERE ID = ?;';
   const queryUpdateRol = 'UPDATE rol SET nombre = ?, estado = ? WHERE users_ID = ?;';
@@ -358,6 +358,23 @@ router.post('/factura', (req, res) => {
     res.json({message: 'Usuario multado correctamente'});
 
   });
+});
+
+// Update user
+router.put('/factura/:id', (req, res) => {
+
+  const query = 'UPDATE factura SET Estado_Factura = ? WHERE users_ID = ?;'
+  const id = req.params.id;
+  const estado = req.body.estado;
+
+  mysqlConnection.query(query, [estado, id], (err, results) => {
+
+    if(err) return console.error(err);
+
+    res.status(200).json({message: 'Pago verificado'});
+
+  });
+
 });
 
 // Comprobante de pago
