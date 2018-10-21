@@ -349,40 +349,42 @@ router.post('/factura', (req, res) => {
   const { user } = req.body;
   const fechaEmision = fechaInicio.dia + '-' + fechaInicio.mes + '-' + fechaInicio.año;
   const fechaLimiteMulta = fechaLimite.dia + '-' + fechaLimite.mes + '-' + fechaLimite.año;
-
   const query = 'INSERT INTO factura (ID, Fecha_Emision, Fecha_Limite, mensaje, Estado_Factura, multa_ID, users_ID) VALUES (NULL, ?, ?, ?, ?, ?, ?);';
 
   mysqlConnection.query(query, [fechaEmision, fechaLimiteMulta, mensaje, estado, tipoMulta, user], (err, results) => {
-
     if(err) return console.error(err);
     res.json({message: 'Usuario multado correctamente'});
-
   });
 });
 
 // Update user
 router.put('/factura/:id', (req, res) => {
-
   const query = 'UPDATE factura SET Estado_Factura = ? WHERE users_ID = ?;'
   const id = req.params.id;
   const estado = req.body.estado;
-
+  
   mysqlConnection.query(query, [estado, id], (err, results) => {
-
     if(err) return console.error(err);
-
     res.status(200).json({message: 'Pago verificado'});
-
   });
-
 });
 
-// Comprobante de pago
+// Obteniendo comprobante de pago
 router.get('/pago/:id', (req, res) => {
   const { id } = req.params; // Parametro recibido por la ruta
   mysqlConnection.query('SELECT * FROM comprobante WHERE users_ID = ?', [id], (err, results) => {
     if (err) return console.error(err);
     res.json(results);
+  });
+});
+
+// Registrando comprobante de pago
+router.post('/pago', (req, res) => {
+  const { comprobante, userID } = req.body.pago;
+  const query = 'INSERT INTO comprobante (ID, comprobante, users_ID) VALUES (NULL, ?, ?);';
+  mysqlConnection.query(query, [comprobante, userID], (err, results) => {
+    if(err) return console.error(err);
+    res.json({message: 'Comprobante enviado correctamente'});
   });
 });
 
