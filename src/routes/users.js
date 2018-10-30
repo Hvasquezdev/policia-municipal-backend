@@ -296,7 +296,7 @@ router.get('/multas/:id', (req, res) => {
 
 });
 
-// Facturas
+// Recibimos todas las Facturas registradas
 router.get('/facturas', (req, res) => {
   let factura = {};
   let user = {};
@@ -323,6 +323,7 @@ router.get('/facturas', (req, res) => {
   });
 });
 
+// Recibimos las facturas que posea el usuario seleccionado
 router.get('/facturas/:id', (req, res) => {
   const { id } = req.params; // Parametro recibido por la ruta
   let factura = {};
@@ -344,14 +345,14 @@ router.get('/facturas/:id', (req, res) => {
   });
 });
 
+// Registra una nueva factura enlanzando el usuario y el tipo de multa a la tabla factura
 router.post('/factura', (req, res) => {
   const { tipoMulta, fechaInicio, fechaLimite, mensaje, estado } = req.body.factura;
   const { user } = req.body;
-  const fechaEmision = fechaInicio.dia + '-' + fechaInicio.mes + '-' + fechaInicio.año;
   const fechaLimiteMulta = fechaLimite.dia + '-' + fechaLimite.mes + '-' + fechaLimite.año;
-  const query = 'INSERT INTO factura (ID, Fecha_Emision, Fecha_Limite, mensaje, Estado_Factura, multa_ID, users_ID) VALUES (NULL, ?, ?, ?, ?, ?, ?);';
+  const query = "INSERT INTO factura (ID, Fecha_Emision, Fecha_Limite, mensaje, Estado_Factura, multa_ID, users_ID) VALUES (NULL, STR_TO_DATE(?, '%d-%m-%Y'), STR_TO_DATE(?, '%d-%m-%Y'), ?, ?, ?, ?);";
 
-  mysqlConnection.query(query, [fechaEmision, fechaLimiteMulta, mensaje, estado, tipoMulta, user], (err, results) => {
+  mysqlConnection.query(query, [fechaInicio, fechaLimiteMulta, mensaje, estado, tipoMulta, user], (err, results) => {
     if(err) return console.error(err);
     res.json({message: 'Usuario multado correctamente'});
   });
