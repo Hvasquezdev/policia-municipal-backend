@@ -301,25 +301,56 @@ router.get('/facturas', (req, res) => {
   let factura = {};
   let user = {};
   let multa = {};
-  mysqlConnection.query('SELECT * FROM factura', (err, results) => {
+  mysqlConnection.query("SELECT * FROM factura", (err, results) => {
     if (err) return console.error(err);
-    factura = results;
+    if(results) {
+      factura = results;
 
-    factura.forEach((element, index, item) => {
-      mysqlConnection.query('SELECT * FROM users WHERE ID = ?', [factura[index].users_ID], (err, results) => {
-        if (err) return console.error(err);
-        user[index] = results[0];
-
-          mysqlConnection.query('SELECT * FROM multa WHERE ID = ?', [factura[index].multa_ID], (err, results) => {
-            if (err) return console.error(err);
-            multa[index] = results[0];
-            if(index === item.length-1) {
-              const allData = {factura, user, multa};
-              res.json(allData);
-            }
-          });
+      factura.forEach((element, index, item) => {
+        mysqlConnection.query('SELECT * FROM users WHERE ID = ?', [factura[index].users_ID], (err, results) => {
+          if (err) return console.error(err);
+          user[index] = results[0];
+  
+            mysqlConnection.query('SELECT * FROM multa WHERE ID = ?', [factura[index].multa_ID], (err, results) => {
+              if (err) return console.error(err);
+              multa[index] = results[0];
+              if(index === item.length-1) {
+                const allData = {factura, user, multa};
+                res.json(allData);
+              }
+            });
+        });
       });
-    });
+    }
+  });
+});
+
+// Recibimos todas las Facturas con pago por confirmar
+router.get('/pagosFactura', (req, res) => {
+  let factura = {};
+  let user = {};
+  let multa = {};
+  mysqlConnection.query("SELECT * FROM factura WHERE Estado_Factura = 'Pendiente'", (err, results) => {
+    if (err) return console.error(err);
+    if(results) {
+      factura = results;
+
+      factura.forEach((element, index, item) => {
+        mysqlConnection.query('SELECT * FROM users WHERE ID = ?', [factura[index].users_ID], (err, results) => {
+          if (err) return console.error(err);
+          user[index] = results[0];
+  
+            mysqlConnection.query('SELECT * FROM multa WHERE ID = ?', [factura[index].multa_ID], (err, results) => {
+              if (err) return console.error(err);
+              multa[index] = results[0];
+              if(index === item.length-1) {
+                const allData = {factura, user, multa};
+                res.json(allData);
+              }
+            });
+        });
+      });
+    }
   });
 });
 
