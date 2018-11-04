@@ -296,6 +296,19 @@ router.get('/multas/:id', (req, res) => {
 
 });
 
+// Registro de nueva multa
+router.post('/newMulta', (req, res) => {
+  const { nombre, precio, descripcion } = req.body;
+  const query = 'INSERT INTO multa (ID, Nombre, Descripcion, Precio) VALUES(NULL, ?, ?, ?);';
+
+  console.log(nombre, precio, descripcion);
+
+  mysqlConnection.query(query, [nombre, descripcion, precio], (err, results) => {
+    if (err) return console.error(err);
+    res.status(200).json(results);
+  });
+});
+
 // Recibimos todas las Facturas registradas
 router.get('/facturas', (req, res) => {
   let factura = {};
@@ -389,7 +402,7 @@ router.post('/factura', (req, res) => {
   });
 });
 
-// Update user
+// Actualiza el estado dela factura
 router.put('/factura/:id', (req, res) => {
   const query = 'UPDATE factura SET Estado_Factura = ? WHERE users_ID = ?;'
   const id = req.params.id;
