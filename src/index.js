@@ -3,6 +3,11 @@ const expressJwt=require('express-jwt');
 const app = express();
 const service = require('../services/index');
 
+// Routes
+const multas = require('./routes/multas');
+const users = require('./routes/users');
+const facturas = require('./routes/facturas');
+
 // Settings
 app.set('port', 3001);
 
@@ -31,7 +36,7 @@ app.use(function (req, res, next) {
 });
 
 // Routes
-app.use(require('./routes/users'));
+app.use(multas, users, facturas);
 
 // Starting Server
 app.listen(app.get('port'), () => {
