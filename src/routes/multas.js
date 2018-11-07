@@ -46,4 +46,13 @@ router.put('/multas/:id', (req, res) => {
   });
 });
 
+// Borrar multa
+router.delete('/multas/:id', (req, res) => {
+  const { id } = req.params;
+  mysqlConnection.query('DELETE FROM multa WHERE ID = ?', [id], (err, results) => {
+    if (err) return console.error(err);
+    res.status(200).json({'message': 'Multa eliminada correctamente'});
+  });
+});
+
 module.exports = router;
