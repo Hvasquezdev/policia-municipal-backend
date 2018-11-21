@@ -85,6 +85,28 @@ router.get('/facturas/:id', (req, res) => {
   });
 });
 
+// Recibimos las facturas que posea el usuario seleccionado
+router.get('/facturasPendiente/:id', (req, res) => {
+  const { id } = req.params; // Parametro recibido por la ruta
+  let factura = {};
+  let multa = {};
+  mysqlConnection.query("SELECT * FROM factura WHERE users_ID = ? AND Estado_Factura = 'Pendiente' OR Estado_Factura = 'Activa'", [id], (err, results) => {
+    if (err) return console.error(err);
+    factura = results;
+
+    factura.forEach((element, index, item) => {
+      mysqlConnection.query('SELECT * FROM multa WHERE ID = ?', [factura[index].multa_ID], (err, results) => {
+        if (err) return console.error(err);
+        multa[index] = results[0];
+        if(index === item.length-1) {
+          const allData = {factura, multa};
+          res.json(allData);
+        }
+      });
+    });
+  });
+});
+
 // Registra una nueva factura enlanzando el usuario y el tipo de multa a la tabla factura
 router.post('/factura', (req, res) => {
   const { tipoMulta, fechaInicio, fechaLimite, mensaje, estado } = req.body.factura;
@@ -100,7 +122,7 @@ router.post('/factura', (req, res) => {
 
 // Actualiza el estado dela factura
 router.put('/factura/:id', (req, res) => {
-  const query = 'UPDATE factura SET Estado_Factura = ? WHERE users_ID = ?;'
+  const query = 'UPDATE factura SET Estado_Factura = ? WHERE ID = ?;'
   const id = req.params.id;
   const estado = req.body.estado;
   
@@ -121,9 +143,9 @@ router.get('/pago/:id', (req, res) => {
 
 // Registrando comprobante de pago
 router.post('/pago', (req, res) => {
-  const { comprobante, userID } = req.body.pago;
-  const query = 'INSERT INTO comprobante (ID, comprobante, users_ID) VALUES (NULL, ?, ?);';
-  mysqlConnection.query(query, [comprobante, userID], (err, results) => {
+  const { comprobante, userID, facturaID } = req.body.pago;
+  const query = 'INSERT INTO comprobante (ID, comprobante, users_ID, factura_ID) VALUES (NULL, ?, ?, ?);';
+  mysqlConnection.query(query, [comprobante, userID, facturaID], (err, results) => {
     if(err) return console.error(err);
     res.json({message: 'Comprobante enviado correctamente'});
   });
