@@ -90,7 +90,7 @@ router.get('/facturasPendiente/:id', (req, res) => {
   const { id } = req.params; // Parametro recibido por la ruta
   let factura = {};
   let multa = {};
-  mysqlConnection.query("SELECT * FROM factura WHERE users_ID = ? AND Estado_Factura = 'Pendiente' OR Estado_Factura = 'Activa'", [id], (err, results) => {
+  mysqlConnection.query("SELECT * FROM factura WHERE users_ID = ? AND Estado_Factura = 'Pendiente' OR Estado_Factura = 'Activa' OR Estado_Factura = 'Rechazado'", [id], (err, results) => {
     if (err) return console.error(err);
     factura = results;
 
@@ -120,7 +120,7 @@ router.post('/factura', (req, res) => {
   });
 });
 
-// Actualiza el estado dela factura
+// Actualiza el estado de la factura
 router.put('/factura/:id', (req, res) => {
   const query = 'UPDATE factura SET Estado_Factura = ? WHERE ID = ?;'
   const id = req.params.id;
@@ -148,6 +148,18 @@ router.post('/pago', (req, res) => {
   mysqlConnection.query(query, [comprobante, userID, facturaID], (err, results) => {
     if(err) return console.error(err);
     res.json({message: 'Comprobante enviado correctamente'});
+  });
+});
+
+// Actualiza el comprobante
+router.put('/pago/:id', (req, res) => {
+  const query = 'UPDATE comprobante SET comprobante = ? WHERE factura_ID = ?;'
+  const id = req.params.id;
+  const comprobante = req.body.comprobante;
+
+  mysqlConnection.query(query, [comprobante, id], (err, results) => {
+    if(err) return console.error(err);
+    res.status(200).json({message: 'Comprobante actualizado'});
   });
 });
 
